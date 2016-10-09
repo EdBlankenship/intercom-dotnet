@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Intercom.Clients;
 using Intercom.Core;
 using Intercom.Data;
-using Intercom.Exceptions;
-using RestSharp;
-using RestSharp.Authenticators;
+using Newtonsoft.Json;
 
 namespace Intercom.Clients
 {
@@ -36,7 +32,7 @@ namespace Intercom.Clients
         public Contact Create (Contact contact)
         {
             if (contact == null) {
-                throw new ArgumentNullException ("'contact' argument is null.");
+                throw new ArgumentNullException (nameof(contact));
             }
 
             ClientResponse<Contact> result = null;
@@ -52,7 +48,7 @@ namespace Intercom.Clients
         public Contact Update (Contact contact)
         {
             if (contact == null) {
-                throw new ArgumentNullException ("'contact' argument is null.");
+                throw new ArgumentNullException (nameof(contact));
             }
 
             if (String.IsNullOrEmpty(contact.id) && String.IsNullOrEmpty(contact.user_id))
@@ -68,7 +64,7 @@ namespace Intercom.Clients
         public Contact View (String id)
         {
             if (String.IsNullOrEmpty (id)) {
-                throw new ArgumentNullException ("'parameters' argument is null.");
+                throw new ArgumentNullException (nameof(id));
             }
 
             ClientResponse<Contact> result = null;
@@ -79,7 +75,7 @@ namespace Intercom.Clients
         public Contact View (Contact contact)
         {
             if (contact == null) {
-                throw new ArgumentNullException ("'contact' argument is null.");
+                throw new ArgumentNullException (nameof(contact));
             }
 
             Dictionary<String, String> parameters = new Dictionary<string, string> ();
@@ -107,7 +103,7 @@ namespace Intercom.Clients
         public Contacts List(String email)
         {
             if (String.IsNullOrEmpty(email)) {
-                throw new ArgumentNullException ("'email' argument is null or empty.");
+                throw new ArgumentNullException (nameof(email));
             }
 
             Dictionary<String, String> parameters = new Dictionary<string, string>();
@@ -122,7 +118,7 @@ namespace Intercom.Clients
         {
             if (parameters == null)
             {
-                throw new ArgumentNullException("'parameters' argument is null.");
+                throw new ArgumentNullException(nameof(parameters));
             }
 
             if (!parameters.Any())
@@ -138,7 +134,7 @@ namespace Intercom.Clients
         public Contact Delete (Contact contact)
         {
             if (contact == null) {
-                throw new ArgumentNullException ("'contact' argument is null.");
+                throw new ArgumentNullException (nameof(contact));
             }
 
             Dictionary<String, String> parameters = new Dictionary<string, string> ();
@@ -159,18 +155,87 @@ namespace Intercom.Clients
         public Contact Delete (String id)
         {
             if (String.IsNullOrEmpty (id)) {
-                throw new ArgumentNullException ("'id' argument is null.");
+                throw new ArgumentNullException (nameof(id));
             }
 
             ClientResponse<Contact> result = null;
             result = Delete<Contact> (resource: CONTACTS_RESOURCE + Path.DirectorySeparatorChar + id);
-            return result.Result;           
+            return result.Result;
         }
 
-        // TODO: Implement converting a lead into a user
-        private User ConvertToUser(Contact contact)
+        public User Convert (Contact contact)
         {
-            throw new NotImplementedException();
+            if (contact == null)
+                throw new ArgumentNullException ("'contact' argument is null.");
+
+            if (String.IsNullOrEmpty (contact.id) && String.IsNullOrEmpty (contact.user_id))
+                throw new ArgumentException ("you need to provide either 'contact.id', 'contact.user_id' to convert a lead.");
+
+            Dictionary<String, String> contactBody = new Dictionary<String, String> ();
+
+            if (!String.IsNullOrEmpty (contact.id)) {
+                contactBody.Add ("id", contact.id);
+            } else {
+                contactBody.Add ("user_id", contact.user_id);
+            }
+
+            var body = new { contact = contactBody };
+
+            var jsonBody = JsonConvert.SerializeObject (body,
+                           Formatting.None,
+                           new JsonSerializerSettings {
+                               NullValueHandling = NullValueHandling.Ignore
+                           });
+
+            var result = Post<User> (jsonBody, resource: CONTACTS_RESOURCE + Path.DirectorySeparatorChar + "convert");
+
+            return result.Result;
+        }
+
+        public User Convert (Contact contact, User user)
+        {
+            if (contact == null)
+                throw new ArgumentNullException ("'contact' argument is null.");
+
+            if (user == null)
+                throw new ArgumentNullException ("'user' argument is null.");
+
+            if (String.IsNullOrEmpty (contact.id) && String.IsNullOrEmpty (contact.user_id))
+                throw new ArgumentException ("you need to provide either 'contact.id', 'contact.user_id' to convert a lead.");
+
+            if (String.IsNullOrEmpty (user.id) && String.IsNullOrEmpty (user.user_id) && String.IsNullOrEmpty (user.email))
+                throw new ArgumentException ("you need to provide either 'user.id', 'user.user_id', or 'user.email' to convert a lead.");
+
+            Dictionary<String, String> contactBody = new Dictionary<String, String> ();
+            Dictionary<String, String> userBody = new Dictionary<String, String> ();
+
+            if (!String.IsNullOrEmpty (user.id)) {
+                userBody.Add ("id", user.id);
+            }
+            else if (!String.IsNullOrEmpty (user.user_id)) {
+                userBody.Add ("user_id", user.user_id);
+            }
+            else {
+                userBody.Add ("email", user.email);
+            }
+
+            if (!String.IsNullOrEmpty (contact.id)) {
+                contactBody.Add ("id", contact.id);
+            } else {
+                contactBody.Add ("user_id", contact.user_id);
+            }
+
+            var body = new { contact = contactBody, user = userBody };
+
+            var jsonBody = JsonConvert.SerializeObject (body,
+                           Formatting.None,
+                           new JsonSerializerSettings {
+                               NullValueHandling = NullValueHandling.Ignore
+                           });
+
+            var result = Post<User> (jsonBody, resource: CONTACTS_RESOURCE + Path.DirectorySeparatorChar + "convert" );
+
+            return result.Result;
         }
     }
 }

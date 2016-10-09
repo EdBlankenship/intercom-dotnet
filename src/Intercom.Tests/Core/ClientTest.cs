@@ -1,18 +1,12 @@
-﻿using NUnit.Framework;
-using System;
-using Intercom.Core;
-using Intercom.Data;
+﻿using Intercom;
 using Intercom.Clients;
-using Intercom.Exceptions;
-using RestSharp;
-using RestSharp.Authenticators;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using System.Linq;
+using Intercom.Core;
+using System;
+using NUnit.Framework;
 
 namespace Intercom.Test
 {
-    [TestFixture()]
+    [TestFixture ()]
     public class ClientTest
     {
         [Test]

@@ -30,11 +30,11 @@ namespace Intercom.Data
                                       String messageType = Reply.ReplyMessageType.COMMENT,
                                       String body = "",
                                       List<String> attachementUrls = null)
-            : base(conversationId, Reply.ReplyMessageType.COMMENT, body, attachementUrls)
+            : base(conversationId, messageType, body, attachementUrls)
         {
 
             if (String.IsNullOrEmpty(conversationId))
-                throw new ArgumentNullException("conversation_id is null or empty.");
+                throw new ArgumentNullException(nameof(conversationId));
 
             if ((messageType == Reply.ReplyMessageType.COMMENT ||
                 messageType == Reply.ReplyMessageType.NOTE) &&

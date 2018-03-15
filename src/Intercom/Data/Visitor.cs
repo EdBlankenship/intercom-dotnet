@@ -17,12 +17,13 @@ namespace Intercom.Data
     {
         public string user_id { get; set; }
         public string name { get; set; }
-        public string email {set;get; } 
-        public int? created_at { get; set; }
-        public int? updated_at { get; set; }
+        public string email { set; get; }
+        public string phone { set; get; }
+        public long? created_at { get; set; }
+        public long? updated_at { get; set; }
         public string last_seen_ip { get; set; }
         public bool? unsubscribed_from_emails { get; set; }
-        public int? last_request_at { get; set; }
+        public long? last_request_at { get; set; }
         public string user_agent_data { get; set; }
         public Dictionary<String, String> custom_attributes { get; set; }
         public Avatar avatar { get; set; }

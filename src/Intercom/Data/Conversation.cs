@@ -11,8 +11,8 @@ namespace Intercom.Data
 {
     public class Conversation : Model
     {
-        public int created_at { get; set; }
-        public int updated_at { get; set; }
+        public long created_at { get; set; }
+        public long updated_at { get; set; }
         public Assignee assignee { get; set; }
         public User user { get; set; }
         public bool open { get; set; }
@@ -21,6 +21,6 @@ namespace Intercom.Data
         [JsonConverter(typeof(ListJsonConverter))]
         public List<ConversationPart> conversation_parts { get; set; }
         [JsonConverter(typeof(ListJsonConverter))]
-        public List<Tags> tags { get; set; }
+        public List<Tag> tags { get; set; }
     }
 }

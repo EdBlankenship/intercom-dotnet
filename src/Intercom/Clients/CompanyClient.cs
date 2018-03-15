@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Intercom.Clients;
 using Intercom.Core;
 using Intercom.Data;
-using Intercom.Exceptions;
 using Newtonsoft.Json;
-using RestSharp;
-using RestSharp.Authenticators;
 
 namespace Intercom.Clients
 {
@@ -35,7 +30,7 @@ namespace Intercom.Clients
 
         public Company Update(Company company)
         {
-			return CreateOrUpdate(company);
+            return CreateOrUpdate(company);
         }
 
         private Company CreateOrUpdate(Company company)
@@ -58,7 +53,7 @@ namespace Intercom.Clients
                     if (attr.Key.Length > 190)
                         throw new ArgumentException(String.Format("Field names must be no longer than 190 characters. key: {0}", attr.Key));
 
-                    if(attr.Value == null)
+                    if (attr.Value == null)
                         throw new ArgumentException(String.Format("'value' is null. key: {0}", attr.Key));
                 }
             }
@@ -74,10 +69,9 @@ namespace Intercom.Clients
             {
                 throw new ArgumentNullException(nameof(id));
             }
-
             ClientResponse<Company> result = null;
             result = Get<Company>(resource: COMPANIES_RESOURCE + Path.DirectorySeparatorChar + id);
-            return result.Result;		
+            return result.Result;
         }
 
         public Company View(Company company)
@@ -108,7 +102,6 @@ namespace Intercom.Clients
             {
                 throw new ArgumentException("you need to provide either 'company.id', 'company.company_id' to view a company.");
             }
-
             return result.Result;
         }
 
@@ -128,11 +121,25 @@ namespace Intercom.Clients
 
             if (!parameters.Any())
             {
-                throw new ArgumentException ("'parameters' argument is empty.");
+                throw new ArgumentException("'parameters' argument is empty.");
             }
 
             ClientResponse<Companies> result = null;
             result = Get<Companies>(parameters: parameters);
+            return result.Result;
+        }
+
+        public Companies Scroll(String scrollParam = null)
+        {
+            Dictionary<String, String> parameters = new Dictionary<String, String>();
+            ClientResponse<Companies> result = null;
+
+            if (!String.IsNullOrWhiteSpace(scrollParam))
+            {
+                parameters.Add("scroll_param", scrollParam);
+            }
+
+            result = Get<Companies>(parameters: parameters, resource: COMPANIES_RESOURCE + Path.DirectorySeparatorChar + "scroll");
             return result.Result;
         }
 
@@ -175,28 +182,28 @@ namespace Intercom.Clients
             String resource = companyId + Path.DirectorySeparatorChar + "users";
             ClientResponse<Users> result = null;
             result = Get<Users>(resource: COMPANIES_RESOURCE + Path.DirectorySeparatorChar + resource);
-            return result.Result;		
+            return result.Result;
         }
 
-        private String Transform (Company company)
+        private String Transform(Company company)
         {
-            String plan = String.Empty;
-
-            if (company.plan != null)
-                plan = company.plan.name;
-
-            var body = new {
+            var body = new
+            {
                 remote_created_at = company.remote_created_at,
                 company_id = company.company_id,
                 name = company.name,
                 monthly_spend = company.monthly_spend,
                 custom_attributes = company.custom_attributes,
-                plan = plan
+                plan = company.plan != null ? company.plan.name : null,
+                website = company.website,
+                size = company.size,
+                industry = company.industry
             };
 
-            return JsonConvert.SerializeObject (body,
+            return JsonConvert.SerializeObject(body,
                            Formatting.None,
-                           new JsonSerializerSettings {
+                           new JsonSerializerSettings
+                           {
                                NullValueHandling = NullValueHandling.Ignore
                            });
         }
